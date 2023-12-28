@@ -13,9 +13,10 @@ namespace evn {
 		~Window();
 
 		inline bool shouldClose() const { return glfwWindowShouldClose(p_window); }
-
+		// getter methods
+		inline GLFWwindow* getWindow() const { return p_window; }
 	private: // methods
-		void init_window();
+		void initWindow();
 	private:
 		bool m_resized;
 		uint32_t m_width;

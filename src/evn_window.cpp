@@ -8,13 +8,13 @@ namespace evn {
 	Window::Window()
 		: m_resized(false), m_width(WIDTH), m_height(HEIGHT), m_name(""), p_window(nullptr)
 	{
-		init_window();
+		initWindow();
 	}
 
 	Window::Window(const uint32_t width, const uint32_t height, const std::string& name)
 		: m_resized(false), m_width(width), m_height(height), m_name(name), p_window(nullptr)
 	{
-		init_window();
+		initWindow();
 	}
 
 	Window::~Window()
@@ -23,7 +23,7 @@ namespace evn {
 		glfwTerminate();
 	}
 
-	void Window::init_window()
+	void Window::initWindow()
 	{
 		glfwInit();
 
