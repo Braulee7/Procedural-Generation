@@ -41,7 +41,16 @@ namespace evn {
 		Device(Device&&) = delete;
 		Device& operator=(const Device&) = delete;
 		Device&& operator=(Device&&) = delete;
-
+		// getter methods
+		inline SwapchainSupportDetails swapchainSupport() const
+		{
+			return querySwapchainSupport(m_physical_device);
+		}
+		
+		inline VkSurfaceKHR& surface() { return m_surface; }
+		inline VkDevice& device() { return m_device; }
+		inline 
+		inline QueueFamilyIndices findQueueFamilies() { return findQueueFamilies(m_physical_device); }
 	private: // methods
 		// creating
 		void createInstance();

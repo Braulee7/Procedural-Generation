@@ -15,6 +15,7 @@ namespace evn {
 		inline bool shouldClose() const { return glfwWindowShouldClose(p_window); }
 		// getter methods
 		inline GLFWwindow* getWindow() const { return p_window; }
+		inline VkExtent2D getExtent() const { return { m_width, m_height }; }
 	private: // methods
 		void initWindow();
 	private:
