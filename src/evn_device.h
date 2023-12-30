@@ -3,6 +3,7 @@
 #include "evn_window.h"
 // std
 #include <iostream>
+#include <cstring>
 #include <cstdlib>
 #include <cassert>
 #include <stdexcept>
@@ -49,8 +50,7 @@ namespace evn {
 		
 		inline VkSurfaceKHR& surface() { return m_surface; }
 		inline VkDevice& device() { return m_device; }
-		inline 
-		inline QueueFamilyIndices findQueueFamilies() { return findQueueFamilies(m_physical_device); }
+		QueueFamilyIndices getQueueFamilies() const;
 	private: // methods
 		// creating
 		void createInstance();

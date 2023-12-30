@@ -1,7 +1,7 @@
 #include "evn_swapchain.h"
 
 namespace evn {
-	Swapchain::Swapchain(Device& device, VkExtent2D& extent)
+	Swapchain::Swapchain(Device& device, const VkExtent2D& extent)
 		: r_device(device), m_window_extent(extent)
 	{
 		init();
@@ -62,7 +62,7 @@ namespace evn {
 		create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 		create_info.oldSwapchain = VK_NULL_HANDLE;
 
-		QueueFamilyIndices indices{ r_device.findQueueFamilies() };
+		QueueFamilyIndices indices{ r_device.getQueueFamilies() };
 		uint32_t queue_family_indices[] = { indices.graphics_family.value(),
 											indices.present_family.value() };
 		

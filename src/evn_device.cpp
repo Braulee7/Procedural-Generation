@@ -59,6 +59,11 @@ namespace evn {
 		vkDestroyInstance(m_instance, nullptr);
 	}
 
+	QueueFamilyIndices Device::getQueueFamilies() const
+	{
+		return findQueueFamilies(m_physical_device);
+	}
+
 	void Device::createInstance()
 	{
 		// debug

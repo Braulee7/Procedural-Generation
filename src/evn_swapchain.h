@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <limits>
 #include "evn_device.h"
 
 namespace evn {
@@ -7,7 +8,7 @@ namespace evn {
 
 	class Swapchain {
 	public:
-		Swapchain(Device& device, VkExtent2D& extent);
+		Swapchain(Device& device, const VkExtent2D& extent);
 		~Swapchain();
 
 	private: // methods
