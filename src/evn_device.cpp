@@ -42,9 +42,9 @@ namespace evn {
 	Device::Device(Window& window)
 		: m_physical_device(VK_NULL_HANDLE), r_window(window)
 	{
+		createInstance();
 		if (debug)
 			setUpDebugMessenger();
-		createInstance();
 		createSurface();
 		pickPhysicalDevice();
 		createLogicalDevice();
@@ -214,7 +214,19 @@ namespace evn {
 
 	bool Device::checkDeviceExtensionSupport(const VkPhysicalDevice& device) const
 	{
-		return false;
+		uint32_t extension_count{ 0 };
+		std::vector<VkExtensionProperties> props;
+		std::set<std::string> required_extensions(device_extensions.begin(), device_extensions.end());
+		// get properties
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, nullptr);
+		props.resize(extension_count);
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count, props.data());
+
+		// make sure all required extensions are on device
+		for (const auto& extension : props)
+			required_extensions.erase(extension.extensionName);
+
+		return required_extensions.empty();
 	}
 
 	QueueFamilyIndices Device::findQueueFamilies(const VkPhysicalDevice& device) const

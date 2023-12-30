@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # set macros for cleaner file
-set(SOURCES main.cpp)
+file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/src/*.cpp)
 
 # dependencies
 find_package(Vulkan REQUIRED)
@@ -14,7 +14,7 @@ if (NOT Vulkan_FOUND)
 	message(FATAL_ERROR "Couldn't find the vulkan SDK")
 endif()
 
-set(DEPENDENT_LIBRARIES ${vulkan_LIBRARIES} glfw)
+set(DEPENDENT_LIBRARIES ${Vulkan_LIBRARIES} glfw)
 set(DEPENDENT_INCLUDE ${Vulkan_INCLUDE_DIRS} glfw ${CMAKE_SOURCE_DIR}/dependencies/glm/glm)
 
 # the entry point of the program
