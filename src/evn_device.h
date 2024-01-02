@@ -67,6 +67,8 @@ namespace evn {
 		void setUpDebugMessenger();
 		void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& create_info);
 		bool checkValidationSupport();
+		// buffer helper methods
+		uint32_t findMemoryType(const uint32_t type_filter, VkMemoryPropertyFlags props);
 	private:
 		VkInstance m_instance;
 		VkPhysicalDevice m_physical_device;

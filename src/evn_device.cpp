@@ -336,5 +336,18 @@ namespace evn {
 		// all layers found
 		return true;
 	}
+
+	uint32_t Device::findMemoryType(const uint32_t type_filter, VkMemoryPropertyFlags props)
+	{
+		VkPhysicalDeviceMemoryProperties mem_props;
+		vkGetPhysicalDeviceMemoryProperties(m_physical_device, &mem_props);
+
+		for (uint32_t i{ 0 }; i < mem_props.memoryTypeCount; i++) {
+			if (type_filter & (i << i) && (mem_props.memoryTypes[].propertyFlags & props) == props)
+				return i;
+		}
+
+		throw std::runtime_error("Failed to find suitable memory");
+	}
 }
 

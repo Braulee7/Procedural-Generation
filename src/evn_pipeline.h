@@ -1,6 +1,8 @@
 #pragma once
 
 #include "evn_device.h"
+#include "evn_mesh.h"
+#include <fstream>
 
 namespace evn {
     // struct to better organise the create info structs
@@ -10,8 +12,8 @@ namespace evn {
         PipelineConfigInfo(const PipelineConfigInfo&) = delete;
         PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
 
-        std::vector<VkVertexInputBindingDescription> binding_descriptions{};
-        std::vector<VkVertexInputAttributeDescription> attribute_descriptions{};
+        VkVertexInputBindingDescription binding_descriptions{};
+        std::array<VkVertexInputAttributeDescription, 2> attribute_descriptions{};
         VkPipelineViewportStateCreateInfo viewport_info;
         VkPipelineInputAssemblyStateCreateInfo input_assembly_info;
         VkPipelineRasterizationStateCreateInfo raster_info;
@@ -28,7 +30,8 @@ namespace evn {
 
     class Pipeline {
     public:
-        Pipeline(const std::string& vert_file_path,
+        Pipeline(Device& deivce,
+                const std::string& vert_file_path,
                 const std::string& frag_file_path,
                 const PipelineConfigInfo& config);
         ~Pipeline();
@@ -42,7 +45,7 @@ namespace evn {
         void createGraphicsPipeline(const std::string& vert_file_path,
                                     const std::string& frag_file_path,
                                     const PipelineConfigInfo& config);
-        void createShaderModule(const std::vector<char>& code, VkShaderModule* shader_module);
+        VkShaderModule createShaderModule(const std::vector<char>& code);
     private:
         Device& r_device;
         VkPipeline m_graphics_pipeline;

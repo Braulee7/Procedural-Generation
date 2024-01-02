@@ -1,9 +1,11 @@
 #include "evn_pipeline.h"
 
 namespace evn {
-        Pipeline::Pipeline(const std::string& vert_file_path,
+        Pipeline::Pipeline(Device& device, 
+                           const std::string& vert_file_path,
                            const std::string& frag_file_path,
                            const PipelineConfigInfo& config)
+            : r_device(device)
         {
             createGraphicsPipeline(vert_file_path, frag_file_path, config);
         }
@@ -20,7 +22,7 @@ namespace evn {
             auto frag_code {readFile(frag_file_path)};
             auto vert_code {readFile(vert_file_path)};
             VkShaderModule frag_module { createShaderModule(frag_code) };
-            VkShaderModule vert_code { createShaderModule(vert_code) };
+            VkShaderModule vert_module { createShaderModule(vert_code) };
             VkPipelineShaderStageCreateInfo vert_create_info{};
             VkPipelineShaderStageCreateInfo frag_create_info{};
 
@@ -59,16 +61,16 @@ namespace evn {
             pipeline_info.pMultisampleState = &config.multisample_info;
             pipeline_info.pColorBlendState = &config.color_blending;
             pipeline_info.pDepthStencilState = &config.depth_stencil_info;
-            pipeline_info.pDynamicState = &config.dynamic_states;
+            pipeline_info.pDynamicState = &config.dynamic_state_info;
 
             pipeline_info.layout = config.pipeline_layout;
-            pipeline_info.render_pass = config.render_pass;
+            pipeline_info.renderPass = config.render_pass;
             pipeline_info.subpass = config.subpass;
 
             pipeline_info.basePipelineIndex = -1;
             pipeline_info.basePipelineHandle = VK_NULL_HANDLE;
 
-            if (vkCreateGraphicsPipelines(r_device.device(), VK_NULL_HANDLE, 1, &pipeline_info, nullptr, m_graphics_pipeline)!=VK_SUCCESS)
+            if (vkCreateGraphicsPipelines(r_device.device(), VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &m_graphics_pipeline)!=VK_SUCCESS)
                 throw std::runtime_error("Failed to create grahpics pipeline");
             
             // clean up shader modules
@@ -76,7 +78,7 @@ namespace evn {
             vkDestroyShaderModule(r_device.device(), vert_module, nullptr);
         }
 
-        void Pipeline::createShaderModule(const std::vector<char>& code, VkShaderModule* shader_module)
+        VkShaderModule Pipeline::createShaderModule(const std::vector<char>& code)
         {
             VkShaderModuleCreateInfo create_info{};
             VkShaderModule module;
@@ -86,7 +88,7 @@ namespace evn {
             create_info.pCode = reinterpret_cast<const uint32_t*>(code.data());
             
             // create the shader
-            if (vkCreateShaderModule(device, &create_info, nullptr, &module) != VK_SUCCESS)
+            if (vkCreateShaderModule(r_device.device(), &create_info, nullptr, &module) != VK_SUCCESS)
                 throw std::runtime_error("failed to create the shader module");
             return module;
         }
@@ -95,6 +97,7 @@ namespace evn {
         {
             // open the file having the pointer be at the end to read in the 
             // size and be in binary to not have to deal with text transformations
+
             std::ifstream file(file_name, std::ios::ate | std::ios::binary);
             if (!file.is_open())
                 throw std::runtime_error("Failed to load in file: " + file_name);
@@ -112,12 +115,17 @@ namespace evn {
 
         void Pipeline::defaultPipelineConfigInfo(PipelineConfigInfo& config)
         {
+            // vertex attributes
+            config.binding_descriptions = Vertex::getBindingDesc();
+            config.attribute_descriptions = Vertex::getAttributes();
+
+
             // putting these values in the dynamic state will ignore them during 
             // pipeline creation and force them to be required during draw time
             config.dynamic_states = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
             config.dynamic_state_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
             config.dynamic_state_info.dynamicStateCount = static_cast<uint32_t>(config.dynamic_states.size());
-            config.dynamic_state_info.pDynamicStates = dynamic_states.data();
+            config.dynamic_state_info.pDynamicStates = config.dynamic_states.data();
 
             // input assembly
             config.input_assembly_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -169,7 +177,7 @@ namespace evn {
             config.color_blending.logicOpEnable = VK_FALSE;
             config.color_blending.logicOp = VK_LOGIC_OP_COPY;
             config.color_blending.attachmentCount = 1;
-            config.color_blending.pAttachments = &color_blend_attachment;
-            for (int i{ 0 }; i < 4; i++) color_blending.blendConstants[i] = 0.0f;
+            config.color_blending.pAttachments = &config.color_blend_attachment;
+            for (int i{ 0 }; i < 4; i++) config.color_blending.blendConstants[i] = 0.0f;
         }
 }
