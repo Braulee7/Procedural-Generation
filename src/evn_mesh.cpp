@@ -9,40 +9,39 @@ namespace evn{
 	}
 	Mesh::~Mesh()
 	{
-		vkDestroyBuffer(r_device.device(), m_index_buffer, nullptr);
-		vkFreeMemory(r_device.device(), m_index_memory, nullptr);
-		
-		vkDestroyBuffer(r_device.device(), m_vertex_buffer, nullptr);
-		vkFreeMemory(r_device.device(), m_vertex_memory, nullptr);
 
 	}
-	void Mesh::createBuffer(const VkDeviceSize& size,
-		const VkBufferUsageFlags& usage,
-		const VkMemoryPropertyFlags& props,
-		VkBuffer& buffer,
-		VkDeviceMemory& buffer_memory)
+
+	void Mesh::createVertexBuffer(std::vector<Vertex>& vertices)
 	{
-		VkBufferCreateInfo buffer_info{};
-		buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		buffer_info.size = size;
-		buffer_info.usage = usage;
-		buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		VkDeviceSize buffer_size{ sizeof(vertices[0]) * vertices.size() };
+		Buffer staging(r_device, buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-		if (vkCreateBuffer(r_device.device(), &buffer_info, nullptr, &buffer) != VK_SUCCESS)
-			throw std::runtime_error("Failed to create a buffer");
+		// move memory to device
+		staging.map((void*)vertices.data());
 
-		VkMemoryRequirements memory_reqs;
-		vkGetBufferMemoryRequirements(r_device.device(), buffer, &memory_reqs);
+		// move staging to vertex buffer
+		m_vertex_buffer = std::make_unique<Buffer>(r_device, buffer_size,
+			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		m_vertex_buffer->copyBuffer(staging.getBuffer(), buffer_size);
+	}
 
-		VkMemoryAllocateInfo alloc_info{};
-		alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		alloc_info.allocationSize = memory_reqs.size;
-		alloc_info.memoryTypeIndex = r_device.findMemoryTypes(memory_reqs.memoryTypeBits, props);
+	void Mesh::createIndexBuffer(std::vector<uint32_t>& indices)
+	{
+		VkDeviceSize buffer_size{ sizeof(indices[0]) * indices.size() };
+		Buffer staging(r_device, buffer_size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-		if (vkAllocateMemory(r_device.device(), nullptr, &buffer_memory) != VK_SUCCESS)
-			throw std::runtime_error("Failed to allocate buffer memory");
+		// move memory to device
+		staging.map((void*)indices.data());
 
-		vkBindBufferMemory(r_device.device(), buffer, buffer_memory, 0); 
+		// move staging to vertex buffer
+		m_index_buffer = std::make_unique<Buffer>(r_device, buffer_size,
+			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		m_index_buffer->copyBuffer(staging.getBuffer(), buffer_size);
 	}
 	
 }

@@ -51,6 +51,9 @@ namespace evn {
 		inline VkSurfaceKHR& surface() { return m_surface; }
 		inline VkDevice& device() { return m_device; }
 		QueueFamilyIndices getQueueFamilies() const;
+		VkCommandBuffer beginSingleTimeCommands();
+		void endSingleTimeCommands(VkCommandBuffer& command_buffer);
+		uint32_t findMemoryType(const uint32_t type_filter, VkMemoryPropertyFlags props);
 	private: // methods
 		// creating
 		void createInstance();
@@ -67,8 +70,8 @@ namespace evn {
 		void setUpDebugMessenger();
 		void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& create_info);
 		bool checkValidationSupport();
-		// buffer helper methods
-		uint32_t findMemoryType(const uint32_t type_filter, VkMemoryPropertyFlags props);
+		
+		void createCommandPool();
 	private:
 		VkInstance m_instance;
 		VkPhysicalDevice m_physical_device;
@@ -76,6 +79,7 @@ namespace evn {
 		VkQueue m_graphics_queue;
 		VkQueue m_present_queue;
 		VkSurfaceKHR m_surface;
+		VkCommandPool m_command_pool;
 		Window& r_window;
 		
 		// debug

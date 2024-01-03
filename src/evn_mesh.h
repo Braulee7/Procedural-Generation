@@ -1,8 +1,9 @@
 #pragma once
-#include <vulkan.h>
 #include <glm/glm.hpp>
 #include <array>
+#include <memory>
 #include "evn_device.h"
+#include "evn_buffer.h"
 namespace evn {
 
 	// layout of the data that will be held inside
@@ -11,7 +12,7 @@ namespace evn {
 		glm::vec3 pos;
 		glm::vec3 color;
 
-		static inline VkVertexInputBindingDescription getBindingDesc() const {
+		static inline VkVertexInputBindingDescription getBindingDesc() {
 			VkVertexInputBindingDescription desc{};
 			desc.binding = 0;
 			desc.stride = sizeof(Vertex);
@@ -19,7 +20,7 @@ namespace evn {
 			return desc;
 		}
 
-		static inline std::array<VkVertexInputAttributeDescription, 2> getAttributes() const {
+		static inline std::array<VkVertexInputAttributeDescription, 2> getAttributes() {
 			std::array<VkVertexInputAttributeDescription, 2> attribs{};
 			
 			attribs[0].binding = 0;
@@ -48,22 +49,15 @@ namespace evn {
 		void draw(VkCommandBuffer& command_buffer);
 
 	private:
-		void createBuffer(const VkDeviceSize& size,
-			const VkBufferUsageFlags& usage,
-			const VkMemoryPropertyFlags& props,
-			VkBuffer& buffer,
-			VkDeviceMemory& buffer_memory);
+		
 		void createVertexBuffer(std::vector<Vertex>& vertices);
 		void createIndexBuffer(std::vector<uint32_t>& indices);
-		uint32_t findMemoryType(const uint32_t type_filter, const VkMemoryPropertyFlags& properties);
-		void copyBuffer();
+		
 
 	private:
 		Device& r_device;
-		VkBuffer m_vertex_buffer;
-		VkDeviceMemory m_vertex_memory;
-		VkBuffer m_index_buffer;
-		VkDeviceMemory m_index_memory;
+		std::unique_ptr<Buffer> m_vertex_buffer;
+		std::unique_ptr<Buffer> m_index_buffer;
 
 	};
 }

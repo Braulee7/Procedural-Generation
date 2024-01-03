@@ -47,8 +47,8 @@ namespace evn {
             vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
             vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attrib_desc.size());
             vertex_input_info.pVertexAttributeDescriptions = attrib_desc.data();
-            vertex_input_info.vertexBindingDescriptionCount = static_cast<uint32_t>(binding_desc.size());
-            vertex_input_info.pVertexBindingDescriptions = binding_desc.data();
+            vertex_input_info.vertexBindingDescriptionCount = 1;
+            vertex_input_info.pVertexBindingDescriptions = &binding_desc;
 
             VkGraphicsPipelineCreateInfo pipeline_info{};
             pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

@@ -48,6 +48,7 @@ namespace evn {
 		createSurface();
 		pickPhysicalDevice();
 		createLogicalDevice();
+		createCommandPool();
 	}
 
 	Device::~Device()
@@ -343,11 +344,56 @@ namespace evn {
 		vkGetPhysicalDeviceMemoryProperties(m_physical_device, &mem_props);
 
 		for (uint32_t i{ 0 }; i < mem_props.memoryTypeCount; i++) {
-			if (type_filter & (i << i) && (mem_props.memoryTypes[].propertyFlags & props) == props)
+			if (type_filter & (i << i) && (mem_props.memoryTypes[i].propertyFlags & props) == props)
 				return i;
 		}
 
 		throw std::runtime_error("Failed to find suitable memory");
+	}
+
+	void Device::createCommandPool()
+	{
+		QueueFamilyIndices indices{ getQueueFamilies() };
+
+		VkCommandPoolCreateInfo pool_info{};
+		pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		pool_info.queueFamilyIndex = indices.graphics_family.value();
+
+		if (vkCreateCommandPool(m_device, &pool_info, nullptr, &m_command_pool) != VK_SUCCESS)
+			throw std::runtime_error("Failed to create command pool");
+	}
+
+	VkCommandBuffer Device::beginSingleTimeCommands()
+	{
+		VkCommandBufferAllocateInfo alloc_info{};
+		alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		alloc_info.commandPool = m_command_pool;
+		alloc_info.commandBufferCount = 1;
+
+		VkCommandBuffer command_buffer;
+		vkAllocateCommandBuffers(m_device, &alloc_info, &command_buffer);
+
+		VkCommandBufferBeginInfo begin_info{};
+		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+		vkBeginCommandBuffer(command_buffer, &begin_info);
+		return command_buffer;
+	}
+	void Device::endSingleTimeCommands(VkCommandBuffer& command_buffer)
+	{
+		vkEndCommandBuffer(command_buffer);
+
+		VkSubmitInfo submit_info{};
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &command_buffer;
+
+		vkQueueSubmit(m_graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
+		vkQueueWaitIdle(m_graphics_queue);
+		vkFreeCommandBuffers(m_device, m_command_pool, 1, &command_buffer);
 	}
 }
 

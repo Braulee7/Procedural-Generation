@@ -15,7 +15,7 @@ if (NOT Vulkan_FOUND)
 endif()
 
 set(DEPENDENT_LIBRARIES ${Vulkan_LIBRARIES} glfw)
-set(DEPENDENT_INCLUDE ${Vulkan_INCLUDE_DIRS} glfw ${CMAKE_SOURCE_DIR}/dependencies/glm/glm)
+set(DEPENDENT_INCLUDE ${Vulkan_INCLUDE_DIRS} glfw ${CMAKE_SOURCE_DIR}/dependencies/glm)
 
 # the entry point of the program
 add_executable(${PROJECT_NAME} ${SOURCES})
