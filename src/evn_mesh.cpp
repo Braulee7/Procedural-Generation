@@ -2,14 +2,26 @@
 
 namespace evn{
 	Mesh::Mesh(Device& device, Data& data)
-		:r_device(device)
+		:r_device(device), m_index_count(data.indices.size()), m_vertex_count(data.vertices.size())
 	{
 		createVertexBuffer(data.vertices);
 		createIndexBuffer(data.indices);
 	}
 	Mesh::~Mesh()
-	{
+	{}
 
+	void Mesh::bind(VkCommandBuffer& command_buffer)
+	{
+		VkBuffer buffers[] = { m_vertex_buffer->getBuffer() };
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(command_buffer, 0, 1, buffers, offsets);
+
+		vkCmdBindIndexBuffer(command_buffer, m_index_buffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+	}
+
+	void Mesh::draw(VkCommandBuffer& command_buffer)
+	{
+		vkCmdDrawIndexed(command_buffer, m_index_count, 1, 0, 0, 0);
 	}
 
 	void Mesh::createVertexBuffer(std::vector<Vertex>& vertices)

@@ -58,6 +58,8 @@ namespace evn {
 		Device& r_device;
 		std::unique_ptr<Buffer> m_vertex_buffer;
 		std::unique_ptr<Buffer> m_index_buffer;
+		uint32_t m_index_count;
+		uint32_t m_vertex_count;
 
 	};
 }
