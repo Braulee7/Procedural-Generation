@@ -4,7 +4,7 @@
 #include "evn_device.h"
 
 namespace evn {
-	const int MAX_FRAMES_IN_FLIGHT = 2;
+	const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
 	class Swapchain {
 	public:
@@ -19,6 +19,7 @@ namespace evn {
 		void createFrameBuffer();
 		void createSyncObjects();
 		void cleanUpSwapchain();
+		void createCommandBuffers();
 
 		// helper methods
 		VkSurfaceFormatKHR chooseSwapchainFormat(const std::vector<VkSurfaceFormatKHR>& formats);
@@ -39,5 +40,7 @@ namespace evn {
 		std::vector<VkSemaphore> m_renders_finished;
 		std::vector<VkFence> m_in_flight_fences;
 		uint32_t m_curr_frame;
+		// rendering variables
+		std::vector<VkCommandBuffer> m_command_buffers;
 	};
 }

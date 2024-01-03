@@ -25,6 +25,7 @@ namespace evn {
 		createImageViews();
 		createRenderPass();
 		createFrameBuffer();
+		createCommandBuffers();
 		createSyncObjects();
 	}
 
@@ -191,6 +192,20 @@ namespace evn {
 				vkCreateFence(r_device.device(), &fence_info, nullptr, &m_in_flight_fences[i]) != VK_SUCCESS)
 				throw std::runtime_error("Failed to create sync objects");
 		}
+	}
+
+	void Swapchain::createCommandBuffers()
+	{
+		m_command_buffers.resize(MAX_FRAMES_IN_FLIGHT);
+
+		VkCommandBufferAllocateInfo info{};
+		info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		info.commandPool = r_device.commandPool();
+		info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		info.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
+
+		if (vkAllocateCommandBuffers(r_device.device(), &info, m_command_buffers.data()) != VK_SUCCESS)
+			throw std::runtime_error("failed to create command buffers");
 	}
 
 	void Swapchain::cleanUpSwapchain()

@@ -47,10 +47,11 @@ namespace evn {
 		{
 			return querySwapchainSupport(m_physical_device);
 		}
-		
 		inline VkSurfaceKHR& surface() { return m_surface; }
 		inline VkDevice& device() { return m_device; }
+		inline VkCommandPool& commandPool() { return m_command_pool; }
 		QueueFamilyIndices getQueueFamilies() const;
+		// helper methods
 		VkCommandBuffer beginSingleTimeCommands();
 		void endSingleTimeCommands(VkCommandBuffer& command_buffer);
 		uint32_t findMemoryType(const uint32_t type_filter, VkMemoryPropertyFlags props);
