@@ -1,8 +1,9 @@
 #include "evn_swapchain.h"
 
 namespace evn {
-	Swapchain::Swapchain(Device& device, const VkExtent2D& extent)
-		: r_device(device), m_window_extent(extent)
+	Swapchain::Swapchain(Device& device, const VkExtent2D& extent, Window& window)
+		: r_device(device), r_window(window), m_window_extent(extent), m_resized(false),
+		m_curr_frame(0), m_image_index(0)
 	{
 		init();
 	}
@@ -17,13 +18,58 @@ namespace evn {
 			vkDestroySemaphore(r_device.device(), m_renders_finished[i], nullptr);
 			vkDestroyFence	  (r_device.device(), m_in_flight_fences[i], nullptr);
 		}
+
+
+	}
+
+	VkCommandBuffer Swapchain::beginRendering()
+	{
+		vkWaitForFences(r_device.device(), 1, &m_in_flight_fences[m_curr_frame],
+			VK_TRUE, UINT64_MAX);
+
+		VkResult result{ vkAcquireNextImageKHR(r_device.device(), m_swapchain, UINT64_MAX,
+			m_images_available[m_curr_frame], VK_NULL_HANDLE, &m_image_index) };
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+			recreateSwapchain();
+			return nullptr;
+		}
+		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+			throw std::runtime_error("Failed to acquire swapchain image");
+
+		vkResetFences(r_device.device(), 1, &m_in_flight_fences[m_curr_frame]);
+
+		// begin recording
+		vkResetCommandBuffer(m_command_buffers[m_curr_frame], 0);
+		VkCommandBufferBeginInfo begin_info{};
+		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		begin_info.flags = 0;
+		begin_info.pInheritanceInfo = nullptr;
+
+		if (vkBeginCommandBuffer(m_command_buffers[m_curr_frame], &begin_info) != VK_SUCCESS)
+			throw std::runtime_error("failed to begin recording command buffer");
+
+		beginRenderPass(m_command_buffers[m_curr_frame]);
+
+		return m_command_buffers[m_curr_frame];
+	}
+
+	void Swapchain::endRendering()
+	{
+		endRenderPass(m_command_buffers[m_curr_frame]);
+		vkEndCommandBuffer(m_command_buffers[m_curr_frame]);
+		submitCommands(m_command_buffers[m_curr_frame]);
 	}
 
 	void Swapchain::init()
 	{
+		// set the window resizing methods to be here
+		glfwSetWindowUserPointer(r_window.getWindow(), this);
+		glfwSetFramebufferSizeCallback(r_window.getWindow(), frameBufferResizeCallback);
 		createSwapchain();
 		createImageViews();
 		createRenderPass();
+		createDepthResources();
 		createFrameBuffer();
 		createCommandBuffers();
 		createSyncObjects();
@@ -111,6 +157,20 @@ namespace evn {
 
 	void Swapchain::createRenderPass()
 	{
+		VkAttachmentDescription depth_attachment{};
+		depth_attachment.format = findDepthFormat();
+		depth_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+		VkAttachmentReference depth_attachment_ref{};
+		depth_attachment_ref.attachment = 1;
+		depth_attachment_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
 		VkAttachmentDescription color_attachment{};
 		color_attachment.format = sc_format;
 		color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -129,20 +189,24 @@ namespace evn {
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount = 1;
 		subpass.pColorAttachments = &color_attachment_ref;
+		subpass.pDepthStencilAttachment = &depth_attachment_ref;
 
 		VkSubpassDependency dependency{};
 		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 		dependency.dstSubpass = 0;
-		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | 
+			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;;
 		dependency.srcAccessMask = 0;
-		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | 
+			VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | 
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-
+		std::array<VkAttachmentDescription, 2> attachments = {color_attachment, depth_attachment};
 		VkRenderPassCreateInfo render_pass_info{};
 		render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		render_pass_info.attachmentCount = 1;
-		render_pass_info.pAttachments = &color_attachment;
+		render_pass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+		render_pass_info.pAttachments = attachments.data();
 		render_pass_info.subpassCount = 1;
 		render_pass_info.pSubpasses = &subpass;
 		render_pass_info.dependencyCount = 1;
@@ -157,12 +221,12 @@ namespace evn {
 		sc_framebuffers.resize(sc_image_views.size());
 
 		for (size_t i{ 0 }; i < sc_image_views.size(); i++) {
-			VkImageView attachments[] = { sc_image_views[i] };
+			VkImageView attachments[] = { sc_image_views[i], m_depth_image_views[i]};
 
 			VkFramebufferCreateInfo create_info{};
 			create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 			create_info.renderPass = m_render_pass;
-			create_info.attachmentCount = 1;
+			create_info.attachmentCount = 2;
 			create_info.pAttachments = attachments;
 			create_info.width = sc_extent.width;
 			create_info.height = sc_extent.height;
@@ -208,6 +272,62 @@ namespace evn {
 			throw std::runtime_error("failed to create command buffers");
 	}
 
+	void Swapchain::freeCommandBuffers()
+	{
+		vkFreeCommandBuffers(
+			r_device.device(),
+			r_device.commandPool(),
+			static_cast<uint32_t>(m_command_buffers.size()),
+			m_command_buffers.data());
+		m_command_buffers.clear();
+	}
+
+	void Swapchain::createDepthResources()
+	{
+		VkFormat depth_format{ findDepthFormat() };
+		sc_depth_format = depth_format;
+		size_t image_count{ sc_images.size() };
+
+		m_depth_images.resize(image_count);
+		m_depth_image_memories.resize(image_count);
+		m_depth_image_views.resize(image_count);
+
+		for (int i{ 0 }; i < image_count; i++) {
+			VkImageCreateInfo image_info{};
+			image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+			image_info.imageType = VK_IMAGE_TYPE_2D;
+			image_info.extent.width = sc_extent.width;
+			image_info.extent.height = sc_extent.height;
+			image_info.extent.depth = 1;
+			image_info.mipLevels = 1;
+			image_info.arrayLayers = 1;
+			image_info.format = depth_format;
+			image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+			image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			image_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+			image_info.samples = VK_SAMPLE_COUNT_1_BIT;
+			image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			image_info.flags = 0;
+
+			r_device.createImageWithInfo(image_info, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+				m_depth_images[i], m_depth_image_memories[i]);
+
+			VkImageViewCreateInfo view_info{};
+			view_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+			view_info.image = m_depth_images[i];
+			view_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+			view_info.format = depth_format;
+			view_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+			view_info.subresourceRange.baseMipLevel = 0;
+			view_info.subresourceRange.levelCount = 1;
+			view_info.subresourceRange.baseArrayLayer = 0;
+			view_info.subresourceRange.layerCount = 1;
+
+			if (vkCreateImageView(r_device.device(), &view_info, nullptr, &m_depth_image_views[i]) != VK_SUCCESS)
+				throw std::runtime_error("failed to create depth image views");
+		}
+	}
+
 	void Swapchain::cleanUpSwapchain()
 	{
 		for (size_t i{ 0 }; i < sc_framebuffers.size(); i++) {
@@ -218,7 +338,120 @@ namespace evn {
 			vkDestroyImageView(r_device.device(), sc_image_views[i], nullptr);
 		}
 
+		for (size_t i{ 0 }; i < m_depth_images.size(); i++) {
+			vkDestroyImageView(r_device.device(), m_depth_image_views[i], nullptr);
+			vkDestroyImage(r_device.device(), m_depth_images[i], nullptr);
+			vkFreeMemory(r_device.device(), m_depth_image_memories[i], nullptr);
+		}
+
 		vkDestroySwapchainKHR(r_device.device(), m_swapchain, nullptr);
+	}
+
+	void Swapchain::recreateSwapchain()
+	{
+		int width{ 0 }, height{ 0 };
+		glfwGetFramebufferSize(r_window.getWindow(), &width, &height);
+		while (width == 0 || height == 0) {
+			glfwGetFramebufferSize(r_window.getWindow(), &width, &height);
+			glfwWaitEvents();
+		}
+		vkDeviceWaitIdle(r_device.device());
+
+		cleanUpSwapchain();
+
+		createSwapchain();
+		createImageViews();
+		createDepthResources();
+		createFrameBuffer();
+	}
+
+	void Swapchain::frameBufferResizeCallback(GLFWwindow* window, int width, int height)
+	{
+		auto app = reinterpret_cast<Swapchain*>(glfwGetWindowUserPointer(window));
+		app->m_resized = true;
+	}
+
+	void Swapchain::beginRenderPass(VkCommandBuffer& command_buffer)
+	{
+		VkRenderPassBeginInfo begin_info{};
+		begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		begin_info.renderPass = m_render_pass;
+		begin_info.framebuffer = sc_framebuffers[m_image_index];
+		begin_info.renderArea.offset = { 0, 0 };
+		begin_info.renderArea.extent = sc_extent;
+
+		std::array<VkClearValue, 2> clear_vals{};
+		clear_vals[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+		clear_vals[1].depthStencil = { 1.0f, 0 };
+		begin_info.clearValueCount = static_cast<uint32_t>(clear_vals.size());
+		begin_info.pClearValues = clear_vals.data();
+
+		vkCmdBeginRenderPass(command_buffer, &begin_info, VK_SUBPASS_CONTENTS_INLINE);
+
+		VkViewport viewport{};
+		viewport.x = 0.0f;
+		viewport.y = 0.0f;
+		viewport.width = static_cast<float>(sc_extent.width);
+		viewport.height = static_cast<float>(sc_extent.height);
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(command_buffer, 0, 1, &viewport);
+
+		VkRect2D scissor{};
+		scissor.offset = { 0, 0 };
+		scissor.extent = sc_extent;
+		vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+	}
+
+	void Swapchain::endRenderPass(VkCommandBuffer& command_buffer)
+	{
+		vkCmdEndRenderPass(command_buffer);
+	}
+
+	void Swapchain::submitCommands(VkCommandBuffer& command_buffer)
+	{
+		VkSubmitInfo submit_info{};
+		VkSemaphore wait_semaphores[] = { m_images_available[m_curr_frame] };
+		VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		VkSemaphore signal_semaphores[] = { m_renders_finished[m_curr_frame] };
+
+		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		submit_info.waitSemaphoreCount = 1;
+		submit_info.pWaitSemaphores = wait_semaphores;
+		submit_info.pWaitDstStageMask = wait_stages;
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers = &command_buffer;
+		submit_info.signalSemaphoreCount = 1;
+		submit_info.pSignalSemaphores = signal_semaphores;
+
+		if (vkQueueSubmit(r_device.graphicsQueue(), 1, &submit_info,
+			m_in_flight_fences[m_curr_frame]) != VK_SUCCESS)
+			throw std::runtime_error("failed to submit draw command to buffer");
+
+		VkPresentInfoKHR present_info{};
+		present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		present_info.waitSemaphoreCount = 1;
+		present_info.pWaitSemaphores = signal_semaphores;
+
+		VkSwapchainKHR swap_chains[] = { m_swapchain };
+		present_info.swapchainCount = 1;
+		present_info.pSwapchains = swap_chains;
+		present_info.pImageIndices = &m_image_index;
+		present_info.pResults = nullptr;
+
+		auto result = vkQueuePresentKHR(r_device.presentQueue(), &present_info);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR ||
+			result == VK_SUBOPTIMAL_KHR || m_resized)
+		{
+			m_resized = false;
+			recreateSwapchain();
+		}
+		else if (result != VK_SUCCESS)
+			throw std::runtime_error("Failed to present image");
+
+		m_curr_frame = (m_curr_frame + 1) % MAX_FRAMES_IN_FLIGHT;
+
 	}
 
 	VkSurfaceFormatKHR Swapchain::chooseSwapchainFormat(const std::vector<VkSurfaceFormatKHR>& formats)
@@ -261,6 +494,15 @@ namespace evn {
 			capabilities.maxImageExtent.height);
 
 		return actual;
+	}
+
+	VkFormat Swapchain::findDepthFormat()
+	{
+		return r_device.findSupportedFormat(
+			{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+			VK_IMAGE_TILING_OPTIMAL,
+			VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+		);
 	}
 
 

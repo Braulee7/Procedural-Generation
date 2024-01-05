@@ -19,8 +19,8 @@ namespace evn {
                            const std::string& frag_file_path,
                            const PipelineConfigInfo& config)
         {
-            auto frag_code {readFile(frag_file_path)};
             auto vert_code {readFile(vert_file_path)};
+            auto frag_code {readFile(frag_file_path)};
             VkShaderModule frag_module { createShaderModule(frag_code) };
             VkShaderModule vert_module { createShaderModule(vert_code) };
             VkPipelineShaderStageCreateInfo vert_create_info{};
@@ -41,12 +41,12 @@ namespace evn {
             // fixed functions
 
             auto& binding_desc {config.binding_descriptions};
-            auto& attrib_desc {config.attribute_descriptions};
+            auto& attribs {config.attribute_descriptions};
 
             VkPipelineVertexInputStateCreateInfo vertex_input_info = {};
             vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-            vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attrib_desc.size());
-            vertex_input_info.pVertexAttributeDescriptions = attrib_desc.data();
+            vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribs.size());
+            vertex_input_info.pVertexAttributeDescriptions = attribs.data();
             vertex_input_info.vertexBindingDescriptionCount = 1;
             vertex_input_info.pVertexBindingDescriptions = &binding_desc;
 
@@ -103,7 +103,6 @@ namespace evn {
                 throw std::runtime_error("Failed to load in file: " + file_name);
 
             size_t file_size{ (size_t)file.tellg() };
-            std::cout << file_size << std::endl;
             std::vector<char> buffer(file_size);
 
             // read the file
@@ -143,7 +142,7 @@ namespace evn {
             config.raster_info.polygonMode = VK_POLYGON_MODE_FILL;
             config.raster_info.lineWidth = 1.0f;
             config.raster_info.cullMode = VK_CULL_MODE_BACK_BIT;
-            config.raster_info.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+            config.raster_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
             config.raster_info.depthBiasEnable = VK_FALSE;
             config.raster_info.depthBiasClamp = 0.0f;
             config.raster_info.depthBiasConstantFactor = 0.0f;
@@ -179,5 +178,19 @@ namespace evn {
             config.color_blending.attachmentCount = 1;
             config.color_blending.pAttachments = &config.color_blend_attachment;
             for (int i{ 0 }; i < 4; i++) config.color_blending.blendConstants[i] = 0.0f;
+
+            // depth testing
+            config.depth_stencil_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+            config.depth_stencil_info.depthTestEnable = VK_TRUE;
+            config.depth_stencil_info.depthWriteEnable = VK_TRUE;
+            config.depth_stencil_info.depthCompareOp = VK_COMPARE_OP_LESS;
+            config.depth_stencil_info.depthBoundsTestEnable = VK_FALSE;
+            config.depth_stencil_info.minDepthBounds = 0.0f;  // Optional
+            config.depth_stencil_info.maxDepthBounds = 1.0f;  // Optional
+            config.depth_stencil_info.stencilTestEnable = VK_FALSE;
+            config.depth_stencil_info.front = {};  // Optional
+            config.depth_stencil_info.back = {};   // Optional
+
+            
         }
 }

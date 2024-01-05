@@ -47,6 +47,8 @@ namespace evn {
 		{
 			return querySwapchainSupport(m_physical_device);
 		}
+		inline VkQueue& graphicsQueue() { return m_graphics_queue; };
+		inline VkQueue& presentQueue() { return m_present_queue; };
 		inline VkSurfaceKHR& surface() { return m_surface; }
 		inline VkDevice& device() { return m_device; }
 		inline VkCommandPool& commandPool() { return m_command_pool; }
@@ -55,6 +57,13 @@ namespace evn {
 		VkCommandBuffer beginSingleTimeCommands();
 		void endSingleTimeCommands(VkCommandBuffer& command_buffer);
 		uint32_t findMemoryType(const uint32_t type_filter, VkMemoryPropertyFlags props);
+		VkFormat findSupportedFormat(const std::vector<VkFormat>& canidates, const VkImageTiling& tiling,
+			const VkFormatFeatureFlags& features);
+		void createImageWithInfo(
+			const VkImageCreateInfo& image_info,
+			VkMemoryPropertyFlags properties,
+			VkImage& image,
+			VkDeviceMemory& image_memory);
 	private: // methods
 		// creating
 		void createInstance();

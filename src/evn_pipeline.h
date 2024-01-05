@@ -3,6 +3,7 @@
 #include "evn_device.h"
 #include "evn_mesh.h"
 #include <fstream>
+#include <filesystem>
 
 namespace evn {
     // struct to better organise the create info structs
@@ -40,6 +41,10 @@ namespace evn {
         Pipeline& operator=(const Pipeline&) = delete;
         // helper methods
         static void defaultPipelineConfigInfo(PipelineConfigInfo& config);
+        // render methods
+        inline void bind(VkCommandBuffer& command_buffer) {
+            vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphics_pipeline);
+        }
     private: // methods
         static std::vector<char> readFile(const std::string& file_path);
         void createGraphicsPipeline(const std::string& vert_file_path,

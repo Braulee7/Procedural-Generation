@@ -27,12 +27,8 @@ namespace evn {
 	{
 		glfwInit();
 
-
-
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 		p_window = glfwCreateWindow(m_width, m_height, m_name.c_str(), nullptr, nullptr);
-		glfwSetWindowUserPointer(p_window, this);
 	}
 }

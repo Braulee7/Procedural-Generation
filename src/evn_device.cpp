@@ -53,11 +53,12 @@ namespace evn {
 
 	Device::~Device()
 	{
+		vkDestroyCommandPool(m_device, m_command_pool, nullptr);
 		vkDestroyDevice(m_device, nullptr);
 		if (debug)
 			DestroyDebugUtilsMessengerEXT(m_instance, m_debug_messenger, nullptr);
 		vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
-		vkDestroyInstance(m_instance, nullptr);
+		vkDestroyInstance(m_instance, nullptr); 
 	}
 
 	QueueFamilyIndices Device::getQueueFamilies() const
@@ -349,6 +350,46 @@ namespace evn {
 		}
 
 		throw std::runtime_error("Failed to find suitable memory");
+	}
+
+	VkFormat Device::findSupportedFormat(
+		const std::vector<VkFormat>& candidates, const VkImageTiling& tiling, const VkFormatFeatureFlags& features) {
+		for (VkFormat format : candidates) {
+			VkFormatProperties props;
+			vkGetPhysicalDeviceFormatProperties(m_physical_device, format, &props);
+
+			if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+				return format;
+			}
+			else if (
+				tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+				return format;
+			}
+		}
+		throw std::runtime_error("failed to find supported format!");
+	}
+
+	void Device::createImageWithInfo(const VkImageCreateInfo& image_info, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& image_memory)
+	{
+		if (vkCreateImage(m_device, &image_info, nullptr, &image) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create image!");
+		}
+
+		VkMemoryRequirements memRequirements;
+		vkGetImageMemoryRequirements(m_device, image, &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+		if (vkAllocateMemory(m_device, &allocInfo, nullptr, &image_memory) != VK_SUCCESS) {
+			throw std::runtime_error("failed to allocate image memory!");
+		}
+
+		if (vkBindImageMemory(m_device, image, image_memory, 0) != VK_SUCCESS) {
+			throw std::runtime_error("failed to bind image memory!");
+		}
 	}
 
 	void Device::createCommandPool()

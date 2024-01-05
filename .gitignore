@@ -11,6 +11,9 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
+# bat file to compile the shaders
+src/shaders/*.bat
+
 # Visual Studio files to ignore
 .vs/
 *.suo

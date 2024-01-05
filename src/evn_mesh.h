@@ -1,4 +1,6 @@
 #pragma once
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <array>
 #include <memory>
@@ -28,7 +30,7 @@ namespace evn {
 			attribs[0].format = VK_FORMAT_R32G32B32_SFLOAT;
 			attribs[0].offset = offsetof(Vertex, pos);
 
-			attribs[1].binding = 1;
+			attribs[1].binding = 0;
 			attribs[1].location = 1;
 			attribs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 			attribs[1].offset = offsetof(Vertex, color);
