@@ -48,6 +48,6 @@ namespace evn {
 		config.render_pass = m_swapchain.renderPass();
 
 		m_pipeline = std::make_unique<Pipeline>(m_device,
-			"shaders/vert.spv", "shaders/frag.spv", config);
+			"shaders/shader.vert.spv", "shaders/shader.frag.spv", config);
 	}
 }
