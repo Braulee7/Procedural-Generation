@@ -2,20 +2,20 @@
 #include "evn_app.h"
 
 const std::vector<evn::Vertex> vertices = {
-	{{-0.5f,  0.0f,  0.5f},    {1.0, 0.0,0.0}},    //index 0  front left corner
-	{{ 0.5f,  0.0f, -0.5f},    {0.0, 0.0,1.0}},    //index 1  back right corner
-	{{ 0.5f,  0.0f,  0.5f},    {1.0, 0.0,0.0}},    //index 2  front right corner
-	{{-0.5f,  0.0f, -0.5f},    {0.0, 0.0,1.0}},    //index 3  back left corner
-	{{ 0.0f,  0.7f,  0.0f},    {0.0, 0.0,1.0}},
+	{{-0.5f,  0.0f,  0.5f},    {1.0, 0.0,0.0}},    // index 0  front left corner
+	{{ 0.5f,  0.0f, -0.5f},    {0.0, 0.0,1.0}},    // index 1  back right corner
+	{{ 0.5f,  0.0f,  0.5f},    {1.0, 0.0,0.0}},    // index 2  front right corner
+	{{-0.5f,  0.0f, -0.5f},    {0.0, 0.0,1.0}},    // index 3  back left corner
+	{{ 0.0f,  0.7f,  0.0f},    {0.0, 0.0,1.0}},	   // index 4  top of pyramid
 };
 
 const std::vector<uint32_t> indices = {
 	0, 1, 3,    //bottom of pyramid, left half of square
 	0, 2, 1,    //right half of square
-	3, 0, 4,    //left triangle
+	0, 3, 4,    //left triangle
 	3, 1, 4,    //back triangle
 	1, 2, 4,    //right triangle
-	0, 2, 4,
+	2, 0, 4,
 };
 
 namespace evn {
@@ -35,7 +35,7 @@ namespace evn {
 	void App::run()
 	{
 		auto start{ std::chrono::steady_clock::now() };
-		double delta_time{ 0 };
+		float delta_time{ 0 };
 		// TEMPORARY CREATE AN OBJECT
 		Data data{ vertices, indices };
 		Mesh obj(m_device, data);
@@ -45,7 +45,8 @@ namespace evn {
 			
 			auto command_buffer = m_swapchain.beginRendering();
 			m_pipeline->bind(command_buffer);
-			m_cam.update(command_buffer, m_layout, m_swapchain.currentFrame());
+			m_cam.update(command_buffer, m_layout, m_swapchain.currentFrame(),
+				m_window.getWindow(), delta_time);
 			obj.bind(command_buffer);
 			obj.draw(command_buffer);
 			m_swapchain.endRendering();

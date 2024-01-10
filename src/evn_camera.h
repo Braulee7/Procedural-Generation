@@ -16,7 +16,7 @@ namespace evn {
 				float speed=0.5f, float sens=0.05f);
 		~Camera();
 		void update(VkCommandBuffer& command_buffer, VkPipelineLayout& pipeline_layout, 
-			uint32_t image_index);
+			uint32_t curr_frame, GLFWwindow* window, float delta_time);
 		inline VkDescriptorSetLayout& layout() { return m_descriptor_layout; }
 	private:
 		// uniform buffer methods
@@ -24,7 +24,9 @@ namespace evn {
 		void createDescriptorSetLayout();
 		void createDescriptorPool();
 		void createDescriptorSets();
-		
+		// input methods
+		void processInput(GLFWwindow* window, float delta_time);
+		void processMouse(GLFWwindow* window, double x, double y);
 	private:
 		// uniform buffer variables
 		Device& r_device;
