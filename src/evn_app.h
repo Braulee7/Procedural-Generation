@@ -2,6 +2,7 @@
 #include "evn_swapchain.h"
 #include "evn_device.h"
 #include "evn_pipeline.h"
+#include "evn_camera.h"
 
 namespace evn {
 	class App {
@@ -19,10 +20,9 @@ namespace evn {
 		Window m_window;
 		Device m_device;
 		Swapchain m_swapchain;
+		Camera m_cam;
 		VkPipelineLayout m_layout;
 		std::unique_ptr<Pipeline> m_pipeline;
 		
-		
-
 	};
 }

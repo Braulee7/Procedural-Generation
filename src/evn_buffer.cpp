@@ -31,9 +31,13 @@ namespace evn {
 		r_device.endSingleTimeCommands(command_buffer);
 	}
 
-	void Buffer::map(void* data)
+	void Buffer::map()
 	{
 		vkMapMemory(r_device.device(), m_memory, 0, m_size, 0, &p_data);
+	}
+
+	void Buffer::writeToBuffer(void* data)
+	{
 		memcpy(p_data, data, m_size);
 	}
 

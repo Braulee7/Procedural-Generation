@@ -31,7 +31,8 @@ namespace evn{
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 		// move memory to device
-		staging.map((void*)vertices.data());
+		staging.map();
+		staging.writeToBuffer((void*)vertices.data());
 
 		// move staging to vertex buffer
 		m_vertex_buffer = std::make_unique<Buffer>(r_device, buffer_size,
@@ -47,7 +48,8 @@ namespace evn{
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 		// move memory to device
-		staging.map((void*)indices.data());
+		staging.map();
+		staging.writeToBuffer((void*)indices.data());
 
 		// move staging to vertex buffer
 		m_index_buffer = std::make_unique<Buffer>(r_device, buffer_size,

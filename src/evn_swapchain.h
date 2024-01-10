@@ -5,7 +5,7 @@
 #include "evn_device.h"
 
 namespace evn {
-	const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
+	static const uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
 	class Swapchain {
 	public:
@@ -15,6 +15,7 @@ namespace evn {
 		void endRendering();
 
 		inline VkRenderPass& renderPass() { return m_render_pass; }
+		inline uint32_t& currentFrame() { return m_curr_frame; }
 	private: // methods
 		void init();
 		void createSwapchain();

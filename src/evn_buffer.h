@@ -10,7 +10,8 @@ namespace evn {
 		~Buffer();
 		inline VkBuffer& getBuffer() { return m_buffer; }
 		void copyBuffer(VkBuffer& src_buffer, const VkDeviceSize& size);
-		void map(void* data);
+		void map();
+		void writeToBuffer(void* data);
 	private:
 		void createBuffer(const VkDeviceSize& size,
 			const VkBufferUsageFlags& usage,
