@@ -43,6 +43,20 @@ namespace evn_util {
 		// return the interpolated value in the y direction
 		return interp(u, v, sy);
 	}
+	float PerlinNoise::octavePerlin(float x, float y, int octaves, float persistence)
+	{
+		float val{ 0.0f };
+		float freq{ 1 };
+		float amp { 1 };
+
+		for (int i = 0; i < octaves; i++) {
+			val += perlin(x * freq / m_dimensions, y * freq / m_dimensions) * amp;
+			freq *= 2;
+			amp *= persistence;
+		}
+
+		return val;
+	}
 	void PerlinNoise::initCorners()
 	{
 		// resize the matrice to the dimensions

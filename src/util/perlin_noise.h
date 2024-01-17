@@ -10,6 +10,7 @@ namespace evn_util {
 		PerlinNoise(uint16_t cell_dimensions, unsigned int seed);
 		~PerlinNoise();
 		float perlin(float x, float y);
+		float octavePerlin(float x, float y, int octaves, float persistence=0.5);
 	private: // methods
 		void initCorners();
 		glm::vec2 randomGradient(int x, int y);

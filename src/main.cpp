@@ -25,14 +25,8 @@ int main(void)
 		for (int j = 0; j < 256; j++) {
 			float x { (float)j };
 			float y { (float)i };
-			float val{ 0.0f };
-			float freq{ 1 };
-			float amp { 1 };
-			for (int k = 0; k < 8; k++) {
-				val += perlin_noise.perlin(x * freq / 16.0f, y * freq / 16.0f) * amp;
-				freq *= 2;
-				amp *= 0.5;
-			}
+			
+			float val{ perlin_noise.octavePerlin(x, y, 8) };
 			
 			int color = (int)(((val + 1.0f) * 0.5f) * 255);
 			std::cout << color << ' ' << color << ' ' << color << "\n";
