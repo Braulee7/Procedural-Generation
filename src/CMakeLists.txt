@@ -8,6 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # set macros for cleaner file
 file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/src/*.cpp)
 
+# add utility subdirectory
+add_subdirectory(util)
+
 # dependencies
 find_package(Vulkan REQUIRED COMPONENTS glslc)
 find_program(glslc_executable NAMES glslc HINTS Vulkan::glslc)
@@ -15,8 +18,13 @@ if (NOT Vulkan_FOUND)
 	message(FATAL_ERROR "Couldn't find the vulkan SDK")
 endif()
 
-set(DEPENDENT_LIBRARIES ${Vulkan_LIBRARIES} glfw)
-set(DEPENDENT_INCLUDE ${Vulkan_INCLUDE_DIRS} glfw ${CMAKE_SOURCE_DIR}/dependencies/glm)
+set(DEPENDENT_LIBRARIES ${Vulkan_LIBRARIES}
+                        glfw
+                        Util)
+set(DEPENDENT_INCLUDE ${Vulkan_INCLUDE_DIRS}
+                      glfw 
+                      ${CMAKE_SOURCE_DIR}/dependencies/glm
+                      ${CMAKE_SOURCE_DIR}/src/util)
 
 # COMPILE SHADERS
 set(SHADER_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/shaders)
