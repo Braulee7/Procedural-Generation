@@ -1,11 +1,10 @@
 #include "perlin_noise.h"
 
 namespace evn_util {
-	PerlinNoise::PerlinNoise(uint16_t cell_dimension, unsigned int seed)
+	PerlinNoise::PerlinNoise(uint16_t cell_dimension)
 		: m_dimensions(cell_dimension), m_mesh_dimension(256)
 	{
-		srand(seed);
-		initCorners();
+		// initCorners();
 	}
 
 	PerlinNoise::~PerlinNoise()

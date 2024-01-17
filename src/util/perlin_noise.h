@@ -7,7 +7,7 @@
 namespace evn_util {
 	class PerlinNoise {
 	public:
-		PerlinNoise(uint16_t cell_dimensions, unsigned int seed);
+		PerlinNoise(uint16_t cell_dimensions);
 		~PerlinNoise();
 		float perlin(float x, float y);
 		float octavePerlin(float x, float y, int octaves, float persistence=0.5);
