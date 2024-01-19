@@ -1,5 +1,6 @@
 #include <chrono>
 #include "evn_app.h"
+#include "evn_terrain.h"
 
 const std::vector<evn::Vertex> vertices = {
 	{{-0.5f,  0.0f,  0.5f},    {1.0, 0.0,0.0}},    // index 0  front left corner
@@ -39,6 +40,8 @@ namespace evn {
 		// TEMPORARY CREATE AN OBJECT
 		Data data{ vertices, indices };
 		Mesh obj(m_device, data);
+
+		Terrain terrain(m_device);
 		while (!m_window.shouldClose()) {
 
 			glfwPollEvents();
@@ -47,8 +50,10 @@ namespace evn {
 			m_pipeline->bind(command_buffer);
 			m_cam.update(command_buffer, m_layout, m_swapchain.currentFrame(),
 				m_window.getWindow(), delta_time);
-			obj.bind(command_buffer);
-			obj.draw(command_buffer);
+			// obj.bind(command_buffer);
+			// obj.draw(command_buffer);
+			terrain.update(command_buffer);
+
 			m_swapchain.endRendering();
 
 			auto end{ std::chrono::steady_clock::now() };

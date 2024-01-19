@@ -16,8 +16,8 @@ namespace evn {
 
         // mesh variables
         Device &r_device;
-        std::unique_ptr<Mesh> mesh;
-        const uint16_t MESH_WIDTH = 256;
-        const uint16_t MESH_HEIGHT = 256;
+        std::unique_ptr<Mesh> m_mesh;
+        const int MESH_WIDTH = 256;
+        const int MESH_HEIGHT = 256;
     };
 }
