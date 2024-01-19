@@ -34,7 +34,7 @@ namespace evn {
 		m_view = glm::lookAt(m_pos, m_pos + m_front, m_up);
 		ubo.view = m_view;
 		ubo.proj = glm::perspective(glm::radians(45.0f), (float)(m_width / m_height),
-			0.1f, 10.0f);
+			0.1f, 100.0f);
 		ubo.proj[1][1] *= -1;
 		m_uniform_buffers[image_index]->writeToBuffer((void*)&ubo);
 

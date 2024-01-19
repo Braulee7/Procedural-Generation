@@ -10,7 +10,7 @@ namespace evn {
         void update(VkCommandBuffer& command_buffer);
     private:
         void initMesh();
-        glm::vec3 getColorFromHeight(const float height);
+        glm::vec3 getColorFromHeight(float& height);
     private:
         evn_util::PerlinNoise m_perlin_noise;
 

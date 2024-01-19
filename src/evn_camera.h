@@ -14,7 +14,7 @@ namespace evn {
 	class Camera {
 	public:
 		Camera(Device& device, uint32_t width, uint32_t height,
-				float speed=0.5f, float sens=0.05f);
+				float speed=1.5f, float sens=0.05f);
 		~Camera();
 		void update(VkCommandBuffer& command_buffer, VkPipelineLayout& pipeline_layout, 
 			uint32_t curr_frame, GLFWwindow* window, float delta_time);

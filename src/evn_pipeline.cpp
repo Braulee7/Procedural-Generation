@@ -139,7 +139,7 @@ namespace evn {
             config.raster_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
             config.raster_info.depthClampEnable = VK_FALSE;
             config.raster_info.rasterizerDiscardEnable = VK_FALSE;
-            config.raster_info.polygonMode = VK_POLYGON_MODE_LINE;
+            config.raster_info.polygonMode = VK_POLYGON_MODE_FILL;
             config.raster_info.lineWidth = 1.0f;
             config.raster_info.cullMode = VK_CULL_MODE_BACK_BIT;
             config.raster_info.frontFace = VK_FRONT_FACE_CLOCKWISE;

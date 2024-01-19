@@ -30,11 +30,11 @@ namespace evn {
 
         for (int y{0}; y < MESH_HEIGHT; y++) {
             for (int x{0}; x < MESH_WIDTH; x++) {
-                float height {m_perlin_noise.octavePerlin((float)x,(float)y, 8) * 10};
+                float height {(m_perlin_noise.octavePerlin((float)x,(float)y, 8) )};
                 auto color {getColorFromHeight(height)};
                 
                 mesh_data.vertices[vertex_index] = { 
-                                {(float)(x), height, (float)(y)}, // position
+                                {(float)(x), height * 15, (float)(y)}, // position
                                 color                         // color
                                 };
 
@@ -59,10 +59,15 @@ namespace evn {
         m_mesh = std::make_unique<Mesh>(r_device, mesh_data);
     }
 
-    glm::vec3 Terrain::getColorFromHeight(const float height)
+    glm::vec3 Terrain::getColorFromHeight(float& height)
     {
-        if (height < 0.4) return { 0., 0.0, 1. };
-        if (height < 0.9) return { 0., 1.0, 0.0 };
+        int color = (int)(((height + 1.0f) * 0.5f) * 255);
+        if (color < 100) {
+            height = -0.5;
+            return { 0., 0.0, 1. };
+        } 
+            
+        if (color < 150) return { 0., 1.0, 0.0 };
         return { 0.5, 0.5, 0.5 };
     }
 }
