@@ -14,7 +14,7 @@ namespace evn {
         PipelineConfigInfo& operator=(const PipelineConfigInfo&) = delete;
 
         VkVertexInputBindingDescription binding_descriptions{};
-        std::array<VkVertexInputAttributeDescription, 2> attribute_descriptions{};
+        std::array<VkVertexInputAttributeDescription, 3> attribute_descriptions{};
         VkPipelineViewportStateCreateInfo viewport_info;
         VkPipelineInputAssemblyStateCreateInfo input_assembly_info;
         VkPipelineRasterizationStateCreateInfo raster_info;

@@ -13,6 +13,7 @@ namespace evn {
 	struct Vertex {
 		glm::vec3 pos;
 		glm::vec3 color;
+		glm::vec3 normal;
 
 		static inline VkVertexInputBindingDescription getBindingDesc() {
 			VkVertexInputBindingDescription desc{};
@@ -22,8 +23,8 @@ namespace evn {
 			return desc;
 		}
 
-		static inline std::array<VkVertexInputAttributeDescription, 2> getAttributes() {
-			std::array<VkVertexInputAttributeDescription, 2> attribs{};
+		static inline std::array<VkVertexInputAttributeDescription, 3> getAttributes() {
+			std::array<VkVertexInputAttributeDescription, 3> attribs{};
 			
 			attribs[0].binding = 0;
 			attribs[0].location = 0;
@@ -34,6 +35,11 @@ namespace evn {
 			attribs[1].location = 1;
 			attribs[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 			attribs[1].offset = offsetof(Vertex, color);
+
+			attribs[2].binding = 0;
+			attribs[2].location = 2;
+			attribs[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+			attribs[2].offset = offsetof(Vertex, normal);
 			return attribs;
 		}
 	};

@@ -35,7 +35,8 @@ namespace evn {
                 
                 mesh_data.vertices[vertex_index] = { 
                                 {(float)(x), height * 15, (float)(y)}, // position
-                                color                         // color
+                                color,                         // color
+                                {0, 0, 0}                      // temp normal
                                 };
 
                 // give the indices for the triangle
@@ -56,7 +57,41 @@ namespace evn {
             }
         }
 
+        calculateNormals(mesh_data);
+
         m_mesh = std::make_unique<Mesh>(r_device, mesh_data);
+    }
+
+    void  Terrain::calculateNormals(Data& mesh_data)
+    {
+        int triangle_count {mesh_data.indices.size() / 3};
+
+        for (int i {0}; i < triangle_count; i++)
+        {
+            int normal_triangle_index {i * 3};
+            uint32_t vertex_a {mesh_data.indices[normal_triangle_index]};
+            uint32_t vertex_b {mesh_data.indices[normal_triangle_index + 1]};
+            uint32_t vertex_c {mesh_data.indices[normal_triangle_index + 2]};
+
+            auto triangle_normal {surfaceNormalFromIndices(vertex_a, vertex_b, vertex_c)};
+            mesh_data.vertices[vertex_a].normal += triangle_normal;
+            mesh_data.vertices[vertex_b].normal += triangle_normal;
+            mesh_data.vertices[vertex_c].normal += triangle_normal;
+        }
+
+        for (int i {0}; i < mesh_data.vertices.size(); i++)
+            mesh_data.vertices[i].normal = glm::normalize(mesh_data.vertices[i].normal);
+    }
+
+    glm::vec3 Terrain::surfaceNormalFromIndices(uint32_t a, uint32_t b, uint32_t c, Data& mesh_data)
+    {
+        auto point_a {mesh_data.vertices[a].pos};
+        auto point_b {mesh_data.vertices[b].pos};
+        auto point_c {mesh_data.vertices[c].pos};
+
+        glm::vec3 side_ab {point_a - point_b};
+        glm::vec3 side_ac {point_a - point_c};
+        return glm::normalize(glm::cross(side_ab, side_ac));
     }
 
     glm::vec3 Terrain::getColorFromHeight(float& height)
