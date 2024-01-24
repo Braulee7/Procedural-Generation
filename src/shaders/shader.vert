@@ -11,10 +11,12 @@ layout(location = 2) in vec3 inNormal;
 
 layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec3 fragNormal;
+layout(location = 2) out vec3 crnPos;
 
 
 void main() {
     gl_Position =  ubo.proj * ubo.view * vec4(inPosition, 1.0);
+    crnPos = inPosition;
     fragColor = inColor;
     fragNormal = inNormal;
 }

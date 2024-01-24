@@ -64,7 +64,7 @@ namespace evn {
 
     void  Terrain::calculateNormals(Data& mesh_data)
     {
-        int triangle_count {mesh_data.indices.size() / 3};
+        int triangle_count {(int)(mesh_data.indices.size() / 3)};
 
         for (int i {0}; i < triangle_count; i++)
         {
@@ -73,7 +73,7 @@ namespace evn {
             uint32_t vertex_b {mesh_data.indices[normal_triangle_index + 1]};
             uint32_t vertex_c {mesh_data.indices[normal_triangle_index + 2]};
 
-            auto triangle_normal {surfaceNormalFromIndices(vertex_a, vertex_b, vertex_c)};
+            glm::vec3 triangle_normal {surfaceNormalFromIndices(vertex_a, vertex_b, vertex_c, mesh_data)};
             mesh_data.vertices[vertex_a].normal += triangle_normal;
             mesh_data.vertices[vertex_b].normal += triangle_normal;
             mesh_data.vertices[vertex_c].normal += triangle_normal;
