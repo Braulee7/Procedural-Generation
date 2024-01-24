@@ -32,9 +32,8 @@ namespace evn {
             for (int x{0}; x < MESH_WIDTH; x++) {
                 float height {(m_perlin_noise.octavePerlin((float)x,(float)y, 8) )};
                 auto color {getColorFromHeight(height)};
-                
                 mesh_data.vertices[vertex_index] = { 
-                                {(float)(x), height * 15, (float)(y)}, // position
+                                {(float)(x), height, (float)(y)}, // position
                                 color,                         // color
                                 {0, 0, 0}                      // temp normal
                                 };
@@ -91,17 +90,18 @@ namespace evn {
 
         glm::vec3 side_ab {point_a - point_b};
         glm::vec3 side_ac {point_a - point_c};
-        return glm::normalize(glm::cross(side_ab, side_ac));
+        auto normal = glm::normalize(glm::cross(side_ab, side_ac));
+        return normal;
     }
 
     glm::vec3 Terrain::getColorFromHeight(float& height)
     {
         int color = (int)(((height + 1.0f) * 0.5f) * 255);
         if (color < 100) {
-            height = -0.5;
+            height = -0.1;
             return { 0., 0.0, 1. };
         } 
-            
+        height =  (height * 15 < 0) ? 0 : height * 15;
         if (color < 150) return { 0., 1.0, 0.0 };
         return { 0.5, 0.5, 0.5 };
     }
