@@ -34,8 +34,8 @@ namespace evn {
                 auto color {getColorFromHeight(height)};
                 mesh_data.vertices[vertex_index] = { 
                                 {(float)(x), height, (float)(y)}, // position
-                                color,                         // color
-                                {0, 0, 0}                      // temp normal
+                                color,                            // color
+                                {0, 0, 0}                         // temp normal
                                 };
 
                 // give the indices for the triangle
