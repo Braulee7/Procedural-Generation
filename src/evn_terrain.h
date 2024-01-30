@@ -1,13 +1,17 @@
+#pragma once
+
 #include <memory>
 #include "util/perlin_noise.h"
 #include "evn_mesh.h"
 namespace evn {
     class Terrain {
     public:
-        Terrain(Device& device);
+        Terrain(Device& device, int x_offset, int y_offset);
         ~Terrain();
-
         void update(VkCommandBuffer& command_buffer);
+    public:
+        const static int MESH_WIDTH = 241;
+        const static int MESH_HEIGHT = 241;
     private:
         void initMesh();
         void calculateNormals(Data& mesh_data);
@@ -19,7 +23,7 @@ namespace evn {
         // mesh variables
         Device &r_device;
         std::unique_ptr<Mesh> m_mesh;
-        const int MESH_WIDTH = 241;
-        const int MESH_HEIGHT = 241;
+        int m_xoffset;
+        int m_yoffset;
     };
 }

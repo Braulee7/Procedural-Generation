@@ -1,8 +1,9 @@
 #include "evn_terrain.h"
 
 namespace evn {
-    Terrain::Terrain(Device& device)
-        : m_perlin_noise(16), r_device(device)
+    Terrain::Terrain(Device& device, int x_offset, int y_offset)
+        : m_perlin_noise(16), r_device(device), m_xoffset(x_offset),
+          m_yoffset(y_offset)
     {
         initMesh();
     }
@@ -33,7 +34,7 @@ namespace evn {
                 float height {(m_perlin_noise.octavePerlin((float)x,(float)y, 8) )};
                 auto color {getColorFromHeight(height)};
                 mesh_data.vertices[vertex_index] = { 
-                                {(float)(x), height, (float)(y)}, // position
+                                {(float)(x + m_xoffset), height, (float)(y + m_yoffset)}, // position
                                 color,                            // color
                                 {0, 0, 0}                         // temp normal
                                 };

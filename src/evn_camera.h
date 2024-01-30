@@ -19,6 +19,9 @@ namespace evn {
 		void update(VkCommandBuffer& command_buffer, VkPipelineLayout& pipeline_layout, 
 			uint32_t curr_frame, GLFWwindow* window, float delta_time);
 		inline VkDescriptorSetLayout& layout() { return m_descriptor_layout; }
+
+	public:
+		glm::vec3 m_pos; // public to allow other classes to get access
 	private:
 		// uniform buffer methods
 		void createUniformBuffers();
@@ -37,7 +40,7 @@ namespace evn {
 		std::vector<VkDescriptorSet> m_descriptor_sets;
 
 		// look at vectors
-		glm::vec3 m_pos;
+		// position
 		glm::vec3 m_front;
 		glm::vec3 m_up;
 		glm::vec3 m_direction;

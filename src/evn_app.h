@@ -3,6 +3,7 @@
 #include "evn_device.h"
 #include "evn_pipeline.h"
 #include "evn_camera.h"
+#include "evn_endless_terrain.h"
 
 namespace evn {
 	class App {
@@ -23,6 +24,6 @@ namespace evn {
 		Camera m_cam;
 		VkPipelineLayout m_layout;
 		std::unique_ptr<Pipeline> m_pipeline;
-		
+		EndlessTerrain m_terrain_generator;
 	};
 }

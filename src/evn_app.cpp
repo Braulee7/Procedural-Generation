@@ -23,7 +23,7 @@ namespace evn {
 	App::App(const std::string& name)
 		: m_name(name), m_window(Window(WIDTH, HEIGHT, m_name)),
 		m_device(m_window), m_swapchain(m_device, m_window.getExtent(), m_window),
-		m_cam(m_device, WIDTH, HEIGHT, 3.0f)
+		m_cam(m_device, WIDTH, HEIGHT, 3.0f), m_terrain_generator(m_device, m_cam)
 	{
 		setUpPipelineLayout();
 		createPipeline();
@@ -41,7 +41,8 @@ namespace evn {
 		Data data{ vertices, indices };
 		Mesh obj(m_device, data);
 
-		Terrain terrain(m_device);
+		// Terrain terrain(m_device, 0, 0);
+		// Terrain second_terrain(m_device, -241, -241);
 		while (!m_window.shouldClose()) {
 
 			glfwPollEvents();
@@ -52,8 +53,9 @@ namespace evn {
 				m_window.getWindow(), delta_time);
 			// obj.bind(command_buffer);
 			// obj.draw(command_buffer);
-			terrain.update(command_buffer);
-
+			// terrain.update(command_buffer);
+			// second_terrain.update(command_buffer);
+			m_terrain_generator.update(command_buffer);
 			m_swapchain.endRendering();
 
 			auto end{ std::chrono::steady_clock::now() };
