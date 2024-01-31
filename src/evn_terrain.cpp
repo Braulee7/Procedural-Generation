@@ -8,6 +8,13 @@ namespace evn {
         initMesh();
     }
 
+    Terrain::Terrain(const Terrain& other)
+        : m_perlin_noise(other.m_perlin_noise), r_device(other.r_device),
+          m_xoffset(other.m_xoffset), m_yoffset(other.m_yoffset)
+    {
+        initMesh();
+    }
+
     Terrain::~Terrain()
     {}
 

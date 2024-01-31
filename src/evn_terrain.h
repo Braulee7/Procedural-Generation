@@ -7,6 +7,7 @@ namespace evn {
     class Terrain {
     public:
         Terrain(Device& device, int x_offset, int y_offset);
+        Terrain(const Terrain& other);
         ~Terrain();
         void update(VkCommandBuffer& command_buffer);
     public:
