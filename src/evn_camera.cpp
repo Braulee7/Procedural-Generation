@@ -34,7 +34,7 @@ namespace evn {
 		m_view = glm::lookAt(m_pos, m_pos + m_front, m_up);
 		ubo.view = m_view;
 		ubo.proj = glm::perspective(glm::radians(45.0f), (float)(m_width / m_height),
-			0.1f, 100.0f);
+			0.1f, 150.0f);
 		ubo.proj[1][1] *= -1;
 		m_uniform_buffers[image_index]->writeToBuffer((void*)&ubo);
 
@@ -141,6 +141,9 @@ namespace evn {
 		}
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {//right
 			m_pos += glm::normalize(glm::cross(m_front, m_up)) * (m_speed * delta_time);
+		}
+		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS){// up
+			m_pos += glm::vec3(0.0, m_speed * delta_time, 0.0);
 		}
 
 		/* Mouse inputs for looking around */

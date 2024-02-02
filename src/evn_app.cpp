@@ -23,7 +23,7 @@ namespace evn {
 	App::App(const std::string& name)
 		: m_name(name), m_window(Window(WIDTH, HEIGHT, m_name)),
 		m_device(m_window), m_swapchain(m_device, m_window.getExtent(), m_window),
-		m_cam(m_device, WIDTH, HEIGHT, 3.0f), m_terrain_generator(m_device, m_cam)
+		m_cam(m_device, WIDTH, HEIGHT, 13.0f), m_terrain_generator(m_device, m_cam)
 	{
 		setUpPipelineLayout();
 		createPipeline();
