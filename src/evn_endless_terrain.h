@@ -1,6 +1,6 @@
 #pragma once
 
-#include <list>
+#include <set>
 #include <map>
 #include <memory>
 #include "evn_terrain.h"
@@ -22,7 +22,7 @@ namespace evn {
     private:
         Device& r_device;
         Camera& r_camera;
-        std::list<std::shared_ptr<Terrain>> m_visible_chunks;
+        std::set<std::shared_ptr<Terrain>> m_visible_chunks;
         std::map<glm::vec2, std::shared_ptr<Terrain>, CompareVec2> m_chunks;
         const float m_render_dist = 450;
         int m_chunk_size;

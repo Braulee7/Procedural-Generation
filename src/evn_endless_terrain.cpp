@@ -12,7 +12,6 @@ namespace evn {
     {
         glm::vec2 viewer_pos {r_camera.m_pos.x, r_camera.m_pos.y};
         updateVisibleChunks(viewer_pos);
-
         // render visible chunks
         for (auto& chunk : m_visible_chunks) 
             chunk->update(command_buffer);
@@ -31,12 +30,12 @@ namespace evn {
                 glm::vec2 viewed_chunk_coord {curr_x + x_offset, curr_y + y_offset};
                 
                 if (m_chunks.find(viewed_chunk_coord) != m_chunks.end()) {
-                    m_visible_chunks.push_back(m_chunks[viewed_chunk_coord]);
+                    m_visible_chunks.insert(m_chunks[viewed_chunk_coord]);
                 } else {
                     m_chunks[viewed_chunk_coord] = std::make_shared<Terrain>(r_device,
-                    x_offset * (m_chunk_size), y_offset * (m_chunk_size));
+                    viewed_chunk_coord.x * (m_chunk_size), viewed_chunk_coord.y * (m_chunk_size));
 
-                    m_visible_chunks.push_back(m_chunks[viewed_chunk_coord]);
+                    m_visible_chunks.insert(m_chunks[viewed_chunk_coord]);
                 }
             }
         }

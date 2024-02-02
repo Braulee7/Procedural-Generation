@@ -38,7 +38,7 @@ namespace evn {
 
         for (int y{0}; y < MESH_HEIGHT; y++) {
             for (int x{0}; x < MESH_WIDTH; x++) {
-                float height {(m_perlin_noise.octavePerlin((float)x,(float)y, 8) )};
+                float height {(m_perlin_noise.octavePerlin((float)x,(float)y, 6) )};
                 auto color {getColorFromHeight(height)};
                 mesh_data.vertices[vertex_index] = { 
                                 {(float)(x + m_xoffset), height, (float)(y + m_yoffset)}, // position
@@ -105,11 +105,11 @@ namespace evn {
     glm::vec3 Terrain::getColorFromHeight(float& height)
     {
         int color = (int)(((height + 1.0f) * 0.5f) * 255);
-        if (color < 100) {
+        if (color < 90) {
             height = -0.1;
             return { 0., 0.0, 1. };
         } 
-        height =  (height * 15 < 0) ? 0 : height * 15;
+        height =  (height * 20 < 0) ? 0 : height * 20;
         if (color < 150) return { 0., 1.0, 0.0 };
         return { 0.5, 0.5, 0.5 };
     }
