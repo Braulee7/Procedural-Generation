@@ -10,7 +10,7 @@ namespace evn {
 
     void EndlessTerrain::update(VkCommandBuffer& command_buffer)
     {
-        glm::vec2 viewer_pos {r_camera.m_pos.x, r_camera.m_pos.y};
+        glm::vec2 viewer_pos {r_camera.m_pos.x, r_camera.m_pos.z};
         updateVisibleChunks(viewer_pos);
         // render visible chunks
         for (auto& chunk : m_visible_chunks) 

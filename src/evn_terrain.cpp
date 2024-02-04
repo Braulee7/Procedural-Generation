@@ -38,10 +38,12 @@ namespace evn {
 
         for (int y{0}; y < MESH_HEIGHT; y++) {
             for (int x{0}; x < MESH_WIDTH; x++) {
-                float height {(m_perlin_noise.octavePerlin((float)x,(float)y, 6) )};
+                float new_x{ (float)(x + m_xoffset) };
+                float new_y{ (float)(y + m_yoffset) };
+                float height {(m_perlin_noise.octavePerlin(ABS(new_x),ABS(new_y), 6) )};
                 auto color {getColorFromHeight(height)};
                 mesh_data.vertices[vertex_index] = { 
-                                {(float)(x + m_xoffset), height, (float)(y + m_yoffset)}, // position
+                                {new_x, height, new_y}, // position
                                 color,                            // color
                                 {0, 0, 0}                         // temp normal
                                 };

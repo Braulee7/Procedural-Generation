@@ -3,6 +3,10 @@
 #include <memory>
 #include "util/perlin_noise.h"
 #include "evn_mesh.h"
+
+// perlin method breaks with negative numbers
+#define ABS(x) (x >= 0 ? x : x * -1)
+
 namespace evn {
     class Terrain {
     public:
